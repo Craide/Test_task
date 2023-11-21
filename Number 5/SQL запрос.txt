@@ -1,0 +1,14 @@
+WITH posts_per_month AS (
+    SELECT  EXTRACT(YEAR FROM created_at) AS year, EXTRACT(MONTH FROM created_at) AS month, COUNT(*) AS count
+	FROM posts
+	GROUP BY year, month 
+	ORDER BY year, month),
+difference AS(
+SELECT make_date(ppm.year::INT, ppm.month::INT, 1) AS date, ppm.count,
+		ROUND(100*((ppm.count-LAG(ppm.count) OVER(ORDER BY ppm.year, ppm.month))::DECIMAL/LAG(ppm.count) OVER(ORDER BY ppm.year, ppm.month))) AS prcnt_growth 
+FROM posts_per_month ppm)
+SELECT dif.date, dif.count,
+    COALESCE(prcnt_growth::VARCHAR || '%', 'zero') AS prcnt_growth
+FROM
+    difference dif
+ORDER BY dif.date
