@@ -1,0 +1,8 @@
+WITH last_r AS (SELECT abonent, MAX(dttm) AS dttm
+    FROM abonents
+    GROUP BY abonent, DATE(dttm)
+)
+SELECT last_r.abonent, abonents.region_id, last_r.dttm
+FROM last_r
+JOIN abonents ON last_r.abonent = abonents.abonent AND last_r.dttm = abonents.dttm
+ORDER BY last_r.abonent DESC, last_r.dttm;
