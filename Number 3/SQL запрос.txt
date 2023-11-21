@@ -1,0 +1,15 @@
+DROP TABLE IF EXISTS dict_item_prices;
+CREATE TABLE IF NOT EXISTS dict_item_prices
+AS(
+	SELECT item_id, 
+	   item_name,
+	   item_price,
+	   DATE(created_dttm) AS valid_from_dt,
+	   COALESCE(((LEAD(created_dttm) OVER (PARTITION BY item_id ORDER BY created_dttm))- INTERVAL '1 DAY')::DATE , '9999-12-31') 
+	   AS valid_to_dt
+FROM item_prices
+ORDER BY item_id
+);
+
+SELECT *
+FROM dict_item_prices
