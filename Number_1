@@ -1,0 +1,31 @@
+--Создаём таблицу
+CREATE TABLE test (id int GENERATED ALWAYS AS IDENTITY NOT NULL , name varchar(10), age INT NOT NULL);
+INSERT INTO test (name, age)
+VALUES 
+('Вася', 23),
+('Петя', 40),
+('Маша', 19),
+('Марина', 23),
+('Сергей', 34);
+
+--Решение 1
+SELECT name
+FROM(SELECT*
+     FROM test
+     ORDER BY age
+     LIMIT 3)
+ORDER BY name;
+
+--Решение 2
+CREATE OR REPLACE VIEW test_v AS
+SELECT*
+FROM test
+ORDER BY age
+LIMIT 3;
+
+SELECT name
+FROM test_v
+ORDER BY name;
+
+DROP VIEW test_v;
+DROP TABLE test;
