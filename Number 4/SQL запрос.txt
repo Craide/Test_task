@@ -1,0 +1,37 @@
+WITH last_month_transactions AS (
+	SELECT 
+	customer_id, 
+	item_id, 
+	item_number, 
+	transaction_dttm
+FROM transaction_details
+WHERE transaction_dttm > CURRENT_TIMESTAMP- INTERVAL '30 DAYS'
+ORDER BY customer_id),
+item_price_transaction AS(
+	SELECT
+	lmt.customer_id,
+	lmt.item_id,
+	lmt.item_number,
+	lmt.transaction_dttm,
+	dip.item_name,
+	dip.item_price
+	FROM last_month_transactions lmt
+	JOIN dict_item_prices dip ON lmt.item_id = dip.item_id AND lmt.transaction_dttm BETWEEN dip.valid_from_dt AND dip.valid_to_dt
+),
+total_price AS(
+	SELECT
+	customer_id,
+	item_name,
+	SUM(item_number*item_price) AS transaction_price
+	FROM item_price_transaction
+	GROUP BY customer_id,item_name),
+max_price AS (
+	SELECT
+	customer_id,
+	MAX(transaction_price) AS max_tp
+	FROM total_price
+	GROUP BY customer_id)
+SELECT tp.customer_id, tp.transaction_price AS spented_in_month, tp.item_name AS top_item
+FROM total_price tp
+JOIN max_price mp ON tp.customer_id = mp.customer_id AND tp.transaction_price = mp.max_tp
+ORDER BY tp.customer_id
